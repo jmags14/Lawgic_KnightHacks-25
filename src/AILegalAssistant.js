@@ -1,6 +1,32 @@
-import React from "react";
+import React, {useState} from "react";
+import axios from "axios";
 
 function AILegalAssistant() {
+  const [prompt, setPrompt] = useState("");
+  const [files, setFiles] = useState([]);
+  const [response, setResponse] = useState("");
+
+  const handleFileChange = (e) => {
+    setFiles(e.target.files);
+  };
+
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    formData.append("prompt", prompt);
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
+
+    try {
+      const res = await axios.post("http://127.0.0.1:5000/api/process", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setResponse(res.data.result);
+    } catch (err) {
+      setResponse("Error: " + err.message);
+    }
+  };
   return (
     <section style={styles.container}>
       <div style={styles.overlay}>
