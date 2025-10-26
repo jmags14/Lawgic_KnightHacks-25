@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, {useState, useRef} from "react";
+=======
+import React, { useState } from "react";
+>>>>>>> f73e62219f7a73237765f295b203e2df06969793
 import axios from "axios";
 
 function AILegalAssistant() {
@@ -10,7 +14,7 @@ function AILegalAssistant() {
 
   const handleFileChange = (e) => {
     // convert FileList to array
-  setFiles(Array.from(e.target.files));
+    setFiles(Array.from(e.target.files));
   };
 
   const handleSubmit = async () => {
@@ -29,6 +33,7 @@ function AILegalAssistant() {
       setResponse("Error: " + err.message);
     }
   };
+
   return (
     <section style={styles.container}>
       <div style={styles.overlay}>
@@ -40,7 +45,11 @@ function AILegalAssistant() {
           <div style={styles.leftSide}>
             <h2 style={styles.sectionTitle}>AI Response</h2>
             <div style={styles.responseBox}>
+<<<<<<< HEAD
               {response || "AI response will appear here..."}
+=======
+              {response ? response : "Awaiting input..."}
+>>>>>>> f73e62219f7a73237765f295b203e2df06969793
             </div>
           </div>
 
@@ -54,6 +63,7 @@ function AILegalAssistant() {
               onChange={(e) => setPrompt(e.target.value)}
             ></textarea>
 
+<<<<<<< HEAD
               <input
                 type="file"
                 multiple
@@ -72,6 +82,38 @@ function AILegalAssistant() {
               <button style={styles.submitButton} onClick={handleSubmit}>
                 Submit
               </button>
+=======
+            {/* Hidden file input */}
+            <input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+              id="fileInput"
+            />
+
+            {/* Custom attach button */}
+            <button
+              style={styles.fileButton}
+              onClick={() => document.getElementById("fileInput").click()}
+            >
+              Attach File(s)
+            </button>
+
+            {/* Submit button */}
+            <button style={styles.submitButton} onClick={handleSubmit}>
+              Submit
+            </button>
+
+            {/* Display selected filenames */}
+            {files.length > 0 && (
+              <ul style={styles.fileList}>
+                {files.map((file, i) => (
+                  <li key={i}>{file.name}</li>
+                ))}
+              </ul>
+            )}
+>>>>>>> f73e62219f7a73237765f295b203e2df06969793
           </div>
         </div>
       </div>
@@ -83,7 +125,7 @@ const styles = {
   container: {
     position: "relative",
     height: "100vh", // same height as Home
-    backgroundImage: `url("https://www.you-fine.com/wp-content/uploads/2023/11/bronze-statue-for-sale-9.jpg")`, // <-- replace with your own image URL
+    backgroundImage: `url("https://www.you-fine.com/wp-content/uploads/2023/11/bronze-statue-for-sale-9.jpg")`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     display: "flex",
@@ -163,6 +205,12 @@ const styles = {
     borderRadius: "8px",
     padding: "10px",
     cursor: "pointer",
+  },
+  fileList: {
+    marginTop: "10px",
+    fontSize: "14px",
+    listStyleType: "disc",
+    paddingLeft: "20px",
   },
 };
 
