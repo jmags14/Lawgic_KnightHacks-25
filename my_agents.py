@@ -112,17 +112,17 @@ def orchestrate_case(file_contents: list, optional_prompt: str = ""):
     """
     combined_text = "\n".join(file_contents)
     
-    # Step 1: Clean & summarize text
+    # clean & summarize text
     summary = cleaner_agent.run(f"Summarize this text:\n{combined_text}\n{optional_prompt}")
     
-    # Step 2: Detect tasks (static mapping for demonstration)
+    # detect tasks (static mapping for demonstration)
     tasks = [
         {"type": "request_records", "agent": "WranglerAgent"},
         {"type": "email_client", "agent": "ClientAgent"},
         {"type": "research_case", "agent": "ResearchAgent"},
     ]
     
-    # Step 3: Loop through tasks and execute corresponding agent
+    # loop through tasks and execute corresponding agent
     task_results = []
     for task in tasks:
         agent_name = task["agent"]
@@ -136,7 +136,7 @@ def orchestrate_case(file_contents: list, optional_prompt: str = ""):
             result = f"No agent found for {agent_name}"
         task_results.append({"task": task["type"], "agent": agent_name, "result": result})
     
-    # Step 4: Return structured JSON
+    # return structured JSON
     return {
         "summary": summary,
         "tasks": task_results
