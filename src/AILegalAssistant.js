@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 function AILegalAssistant() {
@@ -8,7 +8,7 @@ function AILegalAssistant() {
 
   const handleFileChange = (e) => {
     // convert FileList to array
-  setFiles(Array.from(e.target.files));
+    setFiles(Array.from(e.target.files));
   };
 
   const handleSubmit = async () => {
@@ -27,6 +27,7 @@ function AILegalAssistant() {
       setResponse("Error: " + err.message);
     }
   };
+
   return (
     <section style={styles.container}>
       <div style={styles.overlay}>
@@ -38,7 +39,7 @@ function AILegalAssistant() {
           <div style={styles.leftSide}>
             <h2 style={styles.sectionTitle}>AI Response</h2>
             <div style={styles.responseBox}>
-              {/* This box will later display AI responses */}
+              {response ? response : "Awaiting input..."}
             </div>
           </div>
 
@@ -48,10 +49,40 @@ function AILegalAssistant() {
             <textarea
               placeholder="Type your prompt here..."
               style={styles.textInput}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
             ></textarea>
 
-            <button style={styles.fileButton}>Attach File(s)</button>
-            <button style={styles.submitButton}>Submit</button>
+            {/* Hidden file input */}
+            <input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+              id="fileInput"
+            />
+
+            {/* Custom attach button */}
+            <button
+              style={styles.fileButton}
+              onClick={() => document.getElementById("fileInput").click()}
+            >
+              Attach File(s)
+            </button>
+
+            {/* Submit button */}
+            <button style={styles.submitButton} onClick={handleSubmit}>
+              Submit
+            </button>
+
+            {/* Display selected filenames */}
+            {files.length > 0 && (
+              <ul style={styles.fileList}>
+                {files.map((file, i) => (
+                  <li key={i}>{file.name}</li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
@@ -63,7 +94,7 @@ const styles = {
   container: {
     position: "relative",
     height: "100vh", // same height as Home
-    backgroundImage: `url("https://www.you-fine.com/wp-content/uploads/2023/11/bronze-statue-for-sale-9.jpg")`, // <-- replace with your own image URL
+    backgroundImage: `url("https://www.you-fine.com/wp-content/uploads/2023/11/bronze-statue-for-sale-9.jpg")`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     display: "flex",
@@ -143,6 +174,12 @@ const styles = {
     borderRadius: "8px",
     padding: "10px",
     cursor: "pointer",
+  },
+  fileList: {
+    marginTop: "10px",
+    fontSize: "14px",
+    listStyleType: "disc",
+    paddingLeft: "20px",
   },
 };
 
