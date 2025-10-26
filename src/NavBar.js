@@ -17,13 +17,27 @@ const styles = {
   nav: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: "10px 30px",
+    alignItems: "center", // centers vertically
+    padding: "0 30px",
     backgroundColor: "#1a1a1a",
     color: "white",
+    height: "60px", // 👈 fixed height for the bar
+    position: "sticky",
+    top: 0,
+    zIndex: 10,
   },
-  logo: { fontSize: "1.5rem", fontWeight: "bold" },
-  links: { display: "flex", gap: "20px", listStyle: "none", cursor: "pointer" },
+  logo: {
+    fontSize: "35px", // 👈 make logo text bigger
+    fontWeight: "bold",
+    lineHeight: "1", // 👈 prevents extra spacing
+    fontFamily: "'Garamond', serif",
+  },
+  links: {
+    display: "flex",
+    gap: "20px",
+    listStyle: "none",
+    cursor: "pointer",
+  },
 };
 
 export default NavBar;

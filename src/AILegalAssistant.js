@@ -9,7 +9,7 @@ function AILegalAssistant() {
         style={styles.textarea}
         placeholder="Type your legal message draft here..."
       ></textarea>
-      <button style={styles.button}>Refine Message</button>
+      <button style={styles.button}>Generate Response</button>
     </section>
   );
 }
@@ -18,12 +18,14 @@ const styles = {
   container: {
     padding: "40px 20px",
     textAlign: "center",
+    fontFamily: "'Garamond', serif", 
   },
   textarea: {
     width: "80%",
     height: "150px",
     padding: "10px",
     fontSize: "1rem",
+    fontFamily: "'Garamond', serif", 
   },
   button: {
     marginTop: "20px",
@@ -34,6 +36,7 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+    fontFamily: "'Arial', sans-serif", // font-family: Arial, sans-serif;
   },
 };
 

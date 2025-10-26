@@ -18,6 +18,7 @@ const styles = {
     padding: "40px 20px",
     backgroundColor: "#eee",
     textAlign: "center",
+    fontFamily: "'Garamond', serif", 
   },
 };
 
