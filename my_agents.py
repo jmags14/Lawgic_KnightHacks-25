@@ -1,6 +1,6 @@
 #from adk import Agent, GeminiModel, Tool, ToolParameter
 from google.adk.agents import Agent
-from google.adk.models import GeminiModel, Gemini
+from google.adk.models import Gemini
 from google.adk.tools import Tool, ToolParameter
 from dotenv import load_dotenv
 import os
@@ -12,7 +12,7 @@ model = Gemini(model="gemini-2.5-pro")
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-model = GeminiModel(
+model = Gemini(       #not geminimodel now
     api_key=GEMINI_API_KEY,
     model_name="gemini-2.5-pro",
 )
