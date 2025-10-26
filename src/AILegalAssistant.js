@@ -31,7 +31,7 @@ function AILegalAssistant() {
     <section style={styles.container}>
       <div style={styles.overlay}>
         <h1 style={styles.mainTitle}>AI Legal Assistant</h1>
-        <h3 style={styles.subTitle}>Streamline your legal workflow with AI</h3>
+        <h3 style={styles.subTitle}>Simplify legal work through intelligent automation.</h3>
 
         <div style={styles.content}>
           {/* LEFT SIDE */}
@@ -90,7 +90,7 @@ const styles = {
     fontSize: "20px",
     textAlign: "center",
     marginBottom: "50px",
-    fontFamily: "'Arial', sans-serif",
+    fontFamily: "'Georgia', serif",
   },
   content: {
     display: "flex",
