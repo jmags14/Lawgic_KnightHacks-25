@@ -1,10 +1,12 @@
-import React, {useState} from "react";
+import React, {useState, useRef} from "react";
 import axios from "axios";
 
 function AILegalAssistant() {
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState([]);
   const [response, setResponse] = useState("");
+  const fileInputRef = useRef();  
+
 
   const handleFileChange = (e) => {
     // convert FileList to array
@@ -38,7 +40,7 @@ function AILegalAssistant() {
           <div style={styles.leftSide}>
             <h2 style={styles.sectionTitle}>AI Response</h2>
             <div style={styles.responseBox}>
-              {/* This box will later display AI responses */}
+              {response || "AI response will appear here..."}
             </div>
           </div>
 
@@ -48,10 +50,28 @@ function AILegalAssistant() {
             <textarea
               placeholder="Type your prompt here..."
               style={styles.textInput}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
             ></textarea>
 
-            <button style={styles.fileButton}>Attach File(s)</button>
-            <button style={styles.submitButton}>Submit</button>
+              <input
+                type="file"
+                multiple
+                style={{ display: "none" }}
+                ref={fileInputRef}
+                onChange={handleFileChange}
+              />
+
+              <button
+                style={styles.fileButton}
+                onClick={() => fileInputRef.current.click()}
+              >
+                Attach File(s)
+              </button>
+
+              <button style={styles.submitButton} onClick={handleSubmit}>
+                Submit
+              </button>
           </div>
         </div>
       </div>
