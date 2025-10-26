@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-#from my_agents import orchestrate_case  # import your agent setup
+from my_agents import orchestrate_case, load_files_from_folder  # import your agent setup
 import tempfile
 import os
 
@@ -21,23 +21,28 @@ def process():
     """
     try:
         uploaded_files = request.files.getlist("files")
-        uploaded_file_paths = []
+        file_contents = []
 
 
         for f in uploaded_files:
             if f:
                 file_path = os.path.join(app.config["UPLOAD_FOLDER"], f.filename)
                 f.save(file_path)
-                uploaded_file_paths.append(file_path)
+                # load_files_from_folder returns text content
+                file_contents.append(load_files_from_folder(file_path))
 
         # Handle optional user text prompt
         prompt = request.form.get("prompt", "")
 
-        ai_response = f"Received prompt: {prompt}\n"
-        if uploaded_file_paths:
-            ai_response += f"Uploaded files: {', '.join(uploaded_file_paths)}"
-        else:
-            ai_response += "No files uploaded."
+        #test to see if prompt file was recived
+        #ai_response = f"Received prompt: {prompt}\n"
+        #if uploaded_file_paths:
+        #    ai_response += f"Uploaded files: {', '.join(uploaded_file_paths)}"
+        #else:
+        #    ai_response += "No files uploaded."
+
+        # Run orchestration
+        result = orchestrate_case(file_contents, optional_prompt=prompt)
 
                 # Example: Call OpenAI API
         # response = openai.Completion.create(
@@ -50,7 +55,7 @@ def process():
         
         #result = orchestrate_case(file_paths, prompt)
 
-        return jsonify({"status": "success", "result": str(ai_response)})
+        return jsonify({"status": "success", "result": str(result)})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

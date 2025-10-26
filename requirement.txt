@@ -1,0 +1,9 @@
+need to install:
+flask
+flask-cors
+python-dotenv
+google-adk
+requests
+adk
+axios
+node.js
