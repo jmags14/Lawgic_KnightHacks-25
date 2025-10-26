@@ -44,17 +44,6 @@ def process():
         # Run orchestration
         result = orchestrate_case(file_contents, optional_prompt=prompt)
 
-                # Example: Call OpenAI API
-        # response = openai.Completion.create(
-        #     engine="text-davinci-003",
-        #     prompt=prompt,
-        #     max_tokens=500
-        # )
-        # ai_response = response.choices[0].text
-        # Run your orchestration
-        
-        #result = orchestrate_case(file_paths, prompt)
-
         return jsonify({"status": "success", "result": str(result)})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
