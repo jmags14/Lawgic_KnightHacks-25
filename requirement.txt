@@ -3,6 +3,7 @@ flask
 flask-cors
 python-dotenv
 google-adk
+google-generativeai
 requests
 adk
 axios

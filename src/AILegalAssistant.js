@@ -1,46 +1,70 @@
-import React, {useState, useRef} from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 
 function AILegalAssistant() {
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState([]);
-  const [response, setResponse] = useState("");
-  const fileInputRef = useRef();  
-
+  const [response, setResponse] = useState(null);
+  const fileInputRef = useRef();
 
   const handleFileChange = (e) => {
-    // convert FileList to array
-  setFiles(Array.from(e.target.files));
+    setFiles(Array.from(e.target.files));
   };
 
   const handleSubmit = async () => {
     const formData = new FormData();
     formData.append("prompt", prompt);
-
     files.forEach((file) => formData.append("files", file));
+
     try {
       const res = await axios.post(
         "http://127.0.0.1:5000/api/process",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-      setResponse(res.data.result);
+      setResponse(res.data.result); // store the full object
     } catch (err) {
-      setResponse("Error: " + err.message);
+      setResponse({ summary: "Error: " + err.message, tasks: [] });
     }
   };
+
   return (
     <section style={styles.container}>
       <div style={styles.overlay}>
         <h1 style={styles.mainTitle}>AI Legal Assistant</h1>
-        <h3 style={styles.subTitle}>Simplify legal work through intelligent automation.</h3>
+        <h3 style={styles.subTitle}>
+          Simplify legal work through intelligent automation.
+        </h3>
 
         <div style={styles.content}>
           {/* LEFT SIDE */}
           <div style={styles.leftSide}>
             <h2 style={styles.sectionTitle}>AI Response</h2>
             <div style={styles.responseBox}>
-              {response || "AI response will appear here..."}
+              {response ? (
+                <div>
+                  <h4>Summary:</h4>
+                  <p>{response.summary}</p>
+
+                  {response.tasks && response.tasks.length > 0 && (
+                    <>
+                      <h4>Tasks:</h4>
+                      <ul>
+                        {response.tasks.map((task, index) => (
+                          <li key={index}>
+                            <strong>
+                              {task.agent} ({task.task}):
+                            </strong>{" "}
+                            {task.result}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              ) : (
+                "AI response will appear here..."
+              )}
             </div>
           </div>
 
@@ -54,24 +78,24 @@ function AILegalAssistant() {
               onChange={(e) => setPrompt(e.target.value)}
             ></textarea>
 
-              <input
-                type="file"
-                multiple
-                style={{ display: "none" }}
-                ref={fileInputRef}
-                onChange={handleFileChange}
-              />
+            <input
+              type="file"
+              multiple
+              style={{ display: "none" }}
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
 
-              <button
-                style={styles.fileButton}
-                onClick={() => fileInputRef.current.click()}
-              >
-                Attach File(s)
-              </button>
+            <button
+              style={styles.fileButton}
+              onClick={() => fileInputRef.current.click()}
+            >
+              Attach File(s)
+            </button>
 
-              <button style={styles.submitButton} onClick={handleSubmit}>
-                Submit
-              </button>
+            <button style={styles.submitButton} onClick={handleSubmit}>
+              Submit
+            </button>
           </div>
         </div>
       </div>
@@ -82,8 +106,9 @@ function AILegalAssistant() {
 const styles = {
   container: {
     position: "relative",
-    height: "100vh", // same height as Home
-    backgroundImage: `url("https://www.you-fine.com/wp-content/uploads/2023/11/bronze-statue-for-sale-9.jpg")`, // <-- replace with your own image URL
+    height: "100vh",
+    backgroundImage:
+      'url("https://www.you-fine.com/wp-content/uploads/2023/11/bronze-statue-for-sale-9.jpg")',
     backgroundSize: "cover",
     backgroundPosition: "center",
     display: "flex",
@@ -117,9 +142,7 @@ const styles = {
     justifyContent: "space-between",
     gap: "50px",
   },
-  leftSide: {
-    flex: 1,
-  },
+  leftSide: { flex: 1 },
   rightSide: {
     flex: 1,
     display: "flex",

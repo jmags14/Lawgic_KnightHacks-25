@@ -1,148 +1,229 @@
-#from adk import Agent, GeminiModel, Tool, ToolParameter
-from google.adk.agents import Agent
-from google.adk.models import Gemini
-from google.adk.tools import Tool, ToolParameter
+# ---------------------------------------------------------------------------
+# A self-contained multi-agent orchestration pipeline using Gemini (ADK style)
+# ---------------------------------------------------------------------------
+
+#from google.adk.agents import Agent
+#from google.adk.models import Gemini
+#from google.adk.tools import FunctionTool
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
-import json
-
-model = Gemini(model="gemini-2.5-pro")
 
 # ---------------------- ENV & MODEL ----------------------
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-model = Gemini(       #not geminimodel now
-    api_key=GEMINI_API_KEY,
-    model_name="gemini-2.5-pro",
-)
-
-# ---------------------- TOOLS ----------------------
-def send_email(recipient: str, subject: str, body: str):
-    print(f"Sending email to {recipient} with subject '{subject}'")
-    return {"status": "sent", "recipient": recipient}
-
-def summarized_text_tool_func(text: str):
-    response = model.generate(f"Summarize the following text concisely:\n{text}")
-    return response.text
-
-def read_file_tool(file_path: str):
-    with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()
-
-def google_search(query: str):
-    print(f"🔎 Searching Google for: {query}")
-    return f"Simulated search results for '{query}'"
-
-# ---------------------- TOOL OBJECTS ----------------------
-send_email_tool = Tool(
-    name="send_email",
-    description="Send an email",
-    parameters=[
-        ToolParameter("recipient", "string"),
-        ToolParameter("subject", "string"),
-        ToolParameter("body", "string")
-    ],
-    function=send_email
-)
-
-summarized_text_tool = Tool(
-    name="summarized_text",
-    description="Summarizes text",
-    parameters=[ToolParameter("text", "string")],
-    function=summarized_text_tool_func
-)
-
-file_read_tool = Tool(
-    name="file_read",
-    description="Read a file",
-    parameters=[ToolParameter("file_path", "string")],
-    function=read_file_tool
-)
-
-search_tool = Tool(
-    name="google_search",
-    description="Search the web",
-    parameters=[ToolParameter("query", "string")],
-    function=google_search
-)
-
-# ---------------------- AGENTS ----------------------
-cleaner_agent = Agent(
-    name="CleanerAgent",
-    model=model,
-    tools=[file_read_tool, summarized_text_tool],
-    description="Cleans and summarizes input text",
-    instruction="Extract key content and remove irrelevant noise"
-)
-
-wrangler_agent = Agent(
-    name="WranglerAgent",
-    model=model,
-    tools=[send_email_tool],
-    description="Draft requests for missing records",
-    instruction="Draft polite requests for missing records"
-)
-
-client_agent = Agent(
-    name="ClientAgent",
-    model=model,
-    tools=[send_email_tool],
-    description="Draft messages to clients",
-    instruction="Draft professional and empathetic client messages"
-)
-
-research_agent = Agent(
-    name="ResearchAgent",
-    model=model,
-    tools=[search_tool],
-    description="Find legal precedents",
-    instruction="Search for relevant legal cases"
-)
+#GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+MODEL_NAME = "gemini-2.5-flash-lite"
+#model = genai.GenerativeModel("gemini-2.0-pro")
+#model = Gemini(api_key=GEMINI_API_KEY,model_name="gemini-2.5-pro",)
 
 # ---------------------- HELPER FUNCTIONS ----------------------
-def load_files_from_folder(folder_path):
-    content = ""
+def send_email(recipient: str, subject: str, body: str) -> dict:
+    print(f"📧 Sending email to {recipient} with subject '{subject}'")
+    return {"status": "sent", "recipient": recipient, "subject": subject}
+
+def google_search(query: str) -> str:
+    print(f"🔎 Searching Google for: {query}")
+    # In a production system, this would call a real search API
+    return f"Simulated Google results for '{query}'"
+
+def load_files_from_folder(folder_path: str) -> list:
+    """Read all text files from a folder and return list of contents."""
+    contents = []
     for fname in os.listdir(folder_path):
         full_path = os.path.join(folder_path, fname)
         if os.path.isfile(full_path):
-            with open(full_path, "r", encoding="utf-8") as f:
-                content += f"\n\n--- FILE: " + fname + " ---\n" + f.read()
-    return content
+            try:
+                with open(full_path, "r", encoding="utf-8") as f:
+                    contents.append(f"\n\n--- FILE: {fname} ---\n" + f.read())
+            except Exception as e:
+                contents.append(f"[Error reading {fname}: {str(e)}]")
+    return contents
+
+def load_file(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception:
+        # For now, just return a placeholder if file cannot be read
+        return f"[Could not read {os.path.basename(file_path)}]"
+
+# ---------------------- AGENT CLASSES ----------------------
+class BaseAgent:
+    def __init__(self, name: str):
+        self.name = name
+
+    def generate_text(self, prompt: str, max_tokens: int = 300) -> str:
+        # Correct current SDK usage
+        #response = genai.generate(
+           # model=MODEL_NAME,
+          #   max_output_tokens=max_tokens
+        #)
+        #return response.output_text.strip()
+        model = genai.GenerativeModel(MODEL_NAME)
+        response = model.generate_content(prompt)
+        return response.text.strip()
+
+class CleanerAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("CleanerAgent")
+        #self.description = "Cleans and summarizes input text"
+        #self.model = model
+
+    def run(self, text: str) -> str:
+        prompt = (
+            "Clean and summarize the following text. "
+            "Focus on key information and remove noise:\n\n"
+            f"{text}"
+        )
+        #response = genai.generate(
+        #    model=self.model,
+        #    prompt=prompt,
+        #    max_output_tokens=300
+        #)        
+        #return response.text.strip()
+        return self.generate_text(prompt)
+
+
+class WranglerAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("WranglerAgent")
+
+    def run(self, summary: str) -> str:
+        prompt = (
+            "Based on the following summary, draft a polite and professional "
+            "email requesting missing or incomplete records:\n\n"
+            f"{summary}"
+        )
+        return self.generate_text(prompt)
+
+class ClientAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("ClientAgent")
+
+    def run(self, summary: str) -> str:
+        prompt = (
+            "Draft a concise, professional, and empathetic client update based on this summary:\n\n"
+            f"{summary}"
+        )
+        return self.generate_text(prompt)
+
+class ResearchAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("ResearchAgent")
+
+    def run(self, summary: str) -> str:
+        query = f"Relevant legal precedents for: {summary}"
+        search_results = google_search(query)
+        prompt = f"Summarize and interpret the following search results:\n{search_results}"
+        return self.generate_text(prompt)
+
+
+def select_agents_ai(summary: str) -> list:
+    """
+    Ask the AI which agents to run based on the summary.
+    Returns a list of agent names.
+    """
+    prompt = f"""
+    Based on the following summary, decide which of these agents should run next: 
+    - WranglerAgent: drafts requests for missing or incomplete records
+    - ClientAgent: drafts client updates
+    - ResearchAgent: researches legal precedents
+
+    Summary:
+    {summary}
+
+    Return a JSON array of agent names to run.
+    Example: ["ClientAgent", "ResearchAgent"]
+    """
+    model = genai.GenerativeModel(MODEL_NAME)
+    response = model.generate_content(prompt)
+    
+    try:
+        # Try parsing AI response as JSON
+        import json
+        agents = json.loads(response.text.strip())
+        # Filter out invalid agent names
+        valid_agents = ["WranglerAgent", "ClientAgent", "ResearchAgent"]
+        agents = [a for a in agents if a in valid_agents]
+        return agents
+    except Exception as e:
+        print("Error parsing AI agent selection:", e)
+        return []
 
 # ---------------------- ORCHESTRATOR ----------------------
-def orchestrate_case(file_contents: list, optional_prompt: str = ""):
-    """
-    Sequentially processes files with agents and returns structured JSON.
-    """
+def orchestrate_case(file_contents: list, optional_prompt: str = "") -> dict:
     combined_text = "\n".join(file_contents)
-    
-    # clean & summarize text
-    summary = cleaner_agent.run(f"Summarize this text:\n{combined_text}\n{optional_prompt}")
-    
-    # detect tasks (static mapping for demonstration)
-    tasks = [
-        {"type": "request_records", "agent": "WranglerAgent"},
-        {"type": "email_client", "agent": "ClientAgent"},
-        {"type": "research_case", "agent": "ResearchAgent"},
+
+    cleaner = CleanerAgent()
+    wrangler = WranglerAgent()
+    client = ClientAgent()
+    researcher = ResearchAgent()
+
+    # Step 1: Clean & summarize
+    print("🧹 Running CleanerAgent...")
+    try:
+        summary = cleaner.run(combined_text)
+    except Exception as e:
+        return {"summary": "[Error in summarization]", "tasks": [], "error": str(e)}
+
+    # Step 2: Decide which agents to run
+    if optional_prompt.strip():
+        # Use keyword-based routing if prompt exists
+        prompt_lower = optional_prompt.lower()
+        tasks_to_run = []
+        if any(word in prompt_lower for word in ["record", "missing", "request"]):
+            tasks_to_run.append(("request_records", wrangler))
+        if any(word in prompt_lower for word in ["client", "update", "inform"]):
+            tasks_to_run.append(("email_client", client))
+        if any(word in prompt_lower for word in ["research", "precedent", "legal", "case"]):
+            tasks_to_run.append(("research_case", researcher))
+    else:
+        # Let AI choose agents automatically
+        agent_names = select_agents_ai(summary)
+        tasks_to_run = []
+        for name in agent_names:
+            if name == "WranglerAgent":
+                tasks_to_run.append(("request_records", wrangler))
+            elif name == "ClientAgent":
+                tasks_to_run.append(("email_client", client))
+            elif name == "ResearchAgent":
+                tasks_to_run.append(("research_case", researcher))
+
+    # Step 3: Execute selected agents (if any)
+    if not tasks_to_run:
+        return {"summary": summary, "tasks": []}
+
+    results = []
+    for task_type, agent in tasks_to_run:
+        print(f"🤖 Running {agent.name} for task '{task_type}'...")
+        try:
+            output = agent.run(summary)
+        except Exception as e:
+            output = f"[Error: {str(e)}]"
+        results.append({
+            "task": task_type,
+            "agent": agent.name,
+            "result": output
+        })
+
+    return {"summary": summary, "tasks": results}
+
+#disregard
+#pipeline = SequentialAgent(
+#    name="CasePipeline",
+#    sub_agents=[cleaner_agent, wrangler_agent, client_agent, research_agent]
+#)
+
+# ---------------------- MAIN EXECUTION TESTING ----------------------
+if __name__ == "__main__":
+    # Example: process a folder of text files (or just dummy strings)
+    dummy_files = [
+        "Client case: Missing medical records and pending insurance approval.",
+        "Email from hospital: Request for updated consent form.",
+        "Court notice: Submission deadline next week."
     ]
-    
-    # loop through tasks and execute corresponding agent
-    task_results = []
-    for task in tasks:
-        agent_name = task["agent"]
-        if agent_name == "WranglerAgent":
-            result = wrangler_agent.run(summary)
-        elif agent_name == "ClientAgent":
-            result = client_agent.run(summary)
-        elif agent_name == "ResearchAgent":
-            result = research_agent.run(summary)
-        else:
-            result = f"No agent found for {agent_name}"
-        task_results.append({"task": task["type"], "agent": agent_name, "result": result})
-    
-    # return structured JSON
-    return {
-        "summary": summary,
-        "tasks": task_results
-    }
+
+    result = orchestrate_case(dummy_files, optional_prompt="Focus on urgent client updates.")
+    print("\n\n🧾 FINAL OUTPUT ----------------------")
+    print(result)
